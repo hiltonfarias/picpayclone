@@ -6,6 +6,9 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -16,6 +19,8 @@ import javax.persistence.FetchType;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import java.time.LocalDate;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 @Data
@@ -25,7 +30,7 @@ import java.util.List;
 @EqualsAndHashCode(callSuper = false)
 @Entity
 @Table(name = "USERS")
-public class Users extends BaseEntity{
+public class Users extends BaseEntity implements UserDetails {
 
     @Column(name = "USER_LOGIN", nullable = false)
     private String login;
@@ -60,4 +65,39 @@ public class Users extends BaseEntity{
     @Enumerated(EnumType.STRING)
     @Column(name = "USER_PERMISSION", nullable = false)
     private PermissionType permissionType;
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return Collections.<GrantedAuthority>singletonList(new SimpleGrantedAuthority(permissionType.getCode()));
+    }
+
+    @Override
+    public String getPassword() {
+        return this.passWord;
+    }
+
+    @Override
+    public String getUsername() {
+        return this.login;
+    }
+
+    @Override
+    public boolean isAccountNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return true;
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return this.active;
+    }
 }
